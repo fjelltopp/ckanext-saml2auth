@@ -213,8 +213,8 @@ def acs():
     client = h.saml_client(sp_config())
 
     saml_response = request.form.get("SAMLResponse", None)
-    log.debug("SAMLResponse: %s", saml_response)
-    ipdb.set_trace()
+    log.info("SAMLResponse: %s", saml_response)
+    #ipdb.set_trace()
     error = None
     try:
         auth_response = client.parse_authn_request_response(
@@ -320,7 +320,18 @@ def saml2login():
     requested_authn_contexts = _get_requested_authn_contexts()
     relay_state = toolkit.request.args.get("came_from", "")
 
-    ipdb.set_trace()
+    #ipdb.set_trace()
+    log.info("saml2login")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
+    log.info("SEEE MEEEEEE")
     if len(requested_authn_contexts) > 0:
         comparison = config.get(
             "ckanext.saml2auth.requested_authn_context_comparison", "minimum"
