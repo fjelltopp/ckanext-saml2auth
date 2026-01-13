@@ -34,7 +34,7 @@ def get_config():
         toolkit.config.get(u'ckanext.saml2auth.allow_unknown_attributes', True)
     name_id_format = \
         toolkit.aslist(toolkit.config.get(u'ckanext.saml2auth.sp.name_id_format',
-                               "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"))
+                                          "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"))
     name_id_policy_format = toolkit.config.get(u'ckanext.saml2auth.sp.name_id_policy_format')
 
     location = \
@@ -58,7 +58,7 @@ def get_config():
     logout_requests_signed = \
         toolkit.asbool(toolkit.config.get(u'ckanext.saml2auth.logout_requests_signed', False))
     logout_expected_binding = toolkit.config.get(u'ckanext.saml2auth.logout_expected_binding',
-                                              entity.BINDING_HTTP_POST)
+                                                 entity.BINDING_HTTP_POST)
 
     acs_url = base + acs_endpoint
 
