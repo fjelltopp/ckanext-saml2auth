@@ -235,6 +235,9 @@ def acs():
 
     # SAML username - unique
     saml_id = user_info.text
+    # FLASK3_PATCHED_AVA: Ensure ava is JSON serializable for Flask 3.x session
+    # Convert any non-serializable objects to strings
+    auth_response.ava = {k: [str(v) for v in vals] for k, vals in auth_response.ava.items()}
     # Required user attributes for user creation
     email = auth_response.ava[saml_user_email][0]
 
