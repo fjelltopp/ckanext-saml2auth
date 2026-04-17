@@ -22,15 +22,27 @@ from saml2.ident import code, decode
 log = logging.getLogger(__name__)
 
 
+def _safe_decode_name_id(encoded):
+    # saml2.ident.decode() swallows per-field parse errors and can return a
+    # NameID with empty text/format. Reject those so callers force re-auth
+    # rather than operating on an unusable identity.
+    name_id = decode(encoded)
+    if not name_id or not name_id.text or not name_id.format:
+        log.warning('Discarding malformed SAML name_id from session')
+        return None
+    return name_id
+
+
 def set_subject_id(session, subject_id):
     session['_saml2_subject_id'] = code(subject_id)
 
 
 def get_subject_id(session):
     try:
-        return decode(session['_saml2_subject_id'])
+        encoded = session['_saml2_subject_id']
     except KeyError:
         return None
+    return _safe_decode_name_id(encoded)
 
 
 def set_saml_session_info(session, saml_session_info):
@@ -46,12 +58,12 @@ def set_saml_session_info(session, saml_session_info):
 def get_saml_session_info(session):
     try:
         session_info = session['_saml_session_info']
-        # In CKAN 2.11, name_id was encoded for JSON serialization
-        # Decode it back to NameID object if it's a string
-        if session_info and 'name_id' in session_info:
-            if isinstance(session_info['name_id'], str):
-                session_info = session_info.copy()
-                session_info['name_id'] = decode(session_info['name_id'])
-        return session_info
     except KeyError:
         return None
+    if session_info and isinstance(session_info.get('name_id'), str):
+        name_id = _safe_decode_name_id(session_info['name_id'])
+        if name_id is None:
+            return None
+        session_info = session_info.copy()
+        session_info['name_id'] = name_id
+    return session_info

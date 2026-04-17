@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from jinja2 import Template
 import os
 import pytest
@@ -55,15 +55,14 @@ def _prepare_unsigned_response():
     unsigned_response = open(unsigned_response_file).read()
     # parse values
     # Note: Using localhost:5000 to match Flask test client default site_url in CKAN 2.11
-    from datetime import timedelta
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     not_on_or_after = now + timedelta(minutes=5)
 
     context = {
         'entity_id': 'urn:gov:gsa:SAML:2.0.profiles:sp:sso:test:entity',
         'destination': 'http://localhost:5000/acs',
         'recipient': 'http://localhost:5000/acs',
-        'issue_instant': now.isoformat(),
+        'issue_instant': now.strftime('%Y-%m-%dT%H:%M:%SZ'),
         'not_on_or_after': not_on_or_after.strftime('%Y-%m-%dT%H:%M:%SZ')
     }
     t = Template(unsigned_response)
@@ -75,7 +74,7 @@ def _prepare_unsigned_response():
 
 
 @pytest.mark.usefixtures(u'clean_db', u'clean_index')
-@pytest.mark.ckan_config(u'ckan.site_url', u'http://test.ckan.net')
+@pytest.mark.ckan_config(u'ckan.site_url', u'http://localhost:5000')
 @pytest.mark.ckan_config(u'ckan.plugins', u'saml2auth')
 class TestGetRequest:
     """ test getting request from external source """
