@@ -231,6 +231,26 @@ def acs():
 
     auth_response.get_identity()
     user_info = auth_response.get_subject()
+
+    # Validate that every attribute value is a primitive type before it flows
+    # into the Flask session or downstream user fields. pysaml2 can return
+    # non-string AttributeValue objects; a blanket str() would turn those into
+    # repr-like strings that could silently become a user's email/full_name.
+    normalized_ava = {}
+    for attr_key, attr_vals in auth_response.ava.items():
+        clean_vals = []
+        for v in attr_vals:
+            if not isinstance(v, (str, int, float, bool)):
+                msg = 'Unsupported SAML attribute value type for {}: {}'.format(
+                    attr_key, type(v).__name__)
+                log.error(msg)
+                extra_vars = {u'code': [400], u'content': 'Bad login request'}
+                return base.render(
+                    u'error_document_template.html', extra_vars), 400
+            clean_vals.append(v if isinstance(v, str) else str(v))
+        normalized_ava[attr_key] = clean_vals
+    auth_response.ava = normalized_ava
+
     session_info = auth_response.session_info()
 
     # SAML username - unique
